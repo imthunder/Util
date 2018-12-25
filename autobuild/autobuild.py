@@ -11,7 +11,8 @@ import os
 
 SCHEMENAME = "AskDoctor"
 #configuration for iOS build setting
-CONFIGURATION = "Debug"
+#Debug or Release
+CONFIGURATION = "Release" 
 # method:打包方式值：app-store, ad-hoc, enterprise, development
 EXPORT_OPTIONS_PLIST = "exportOptions.plist"
 #会在桌面创建输出ipa文件的目录
