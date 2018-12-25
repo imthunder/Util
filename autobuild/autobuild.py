@@ -11,8 +11,7 @@ import os
 
 SCHEMENAME = "AskDoctor"
 #configuration for iOS build setting
-#Debug or Release
-CONFIGURATION = "Release" 
+CONFIGURATION = "Debug"
 # method:打包方式值：app-store, ad-hoc, enterprise, development
 EXPORT_OPTIONS_PLIST = "exportOptions.plist"
 #会在桌面创建输出ipa文件的目录
@@ -40,19 +39,17 @@ def uploadAppstore(ipaPath):
     print("ipaPath:",ipaPath)
     ipaPath = os.path.expanduser(ipaPath)
     print('正在验证ipa文件,请稍后...')
-    r1 = os.system('{} -v -f {} -u {} -p {} -t ios [--output-format xml]'%(altool_path, ipaPath,, APPSOTREUSERID, APPSOTREPASSWORD))
+    r1 = os.system('{} -v -f {} -u {} -p {} -t ios [--output-format xml]'%(altool_path, ipaPath, APPSOTREUSERID, APPSOTREPASSWORD))
     print("验证的结果是:")
     print(r1)
     if r1 == noError:
         print('正在上传ipa文件,请稍后...')
-        r2 = os.system('{} --upload-app -f {} -t ios -u %s -p %s [--output-format xml]'%(altool_path, ipaPath, APPSOTREUSERID, APPSOTREPASSWORD))
+        r2 = os.system('{} --upload-app -f {} -t ios -u {} -p {} [--output-format xml]'%(altool_path, ipaPath, APPSOTREUSERID, APPSOTREPASSWORD))
         print(r2)
         return r2
-            else:
-                return 1
-            else:
-                print('没有找到.ipa文件')
-                return 1
+    else:
+        return 1
+
 
 
 def cleanArchiveFile(archiveFile):
@@ -89,7 +86,7 @@ def uploadIpaToPgyer(ipaPath):
 
 #创建输出ipa文件路径: ~/Desktop/{scheme}{2016-12-28_08-08-10}
 def buildExportDirectory(scheme):
-    dateCmd = 'date "+%Y-%m-%d_%H-%M-%S"'
+    dateCmd = 'date"+%Y-%m-%d_%H-%M-%S"'
     process = subprocess.Popen(dateCmd, stdout=subprocess.PIPE, shell=True)
     (stdoutdata, stderrdata) = process.communicate()
     exportDirectory = "{}{}{}".format(EXPORT_MAIN_DIRECTORY, scheme,stdoutdata.strip())
@@ -145,21 +142,21 @@ def buildProject(project, scheme):
                 uploadAppstore(ipaPath)
 
 def buildWorkspace(workspace, scheme):
-	archivePath = buildArchivePath(scheme)
-	print("archivePath: " , archivePath)
-	archiveCmd = 'xcodebuild -workspace {} -scheme {} -configuration {} archive -archivePath {} -destination generic/platform=iOS'.format(workspace, scheme, CONFIGURATION, archivePath)
-	process = subprocess.Popen(archiveCmd, shell=True)
-	process.wait()
+    archivePath = buildArchivePath(scheme)
+    print("archivePath: " , archivePath)
+    archiveCmd = 'xcodebuild -workspace {} -scheme {} -configuration {} archive -archivePath {} -destination generic/platform=iOS'.format(workspace, scheme, CONFIGURATION, archivePath)
+    process = subprocess.Popen(archiveCmd, shell=True)
+    process.wait()
 
-	archiveReturnCode = process.returncode
-	if archiveReturnCode != 0:
-		print("archive workspace {} failed".format(workspace))
-		cleanArchiveFile(archivePath)
-	else:
-		exportDirectory = exportArchive(scheme, archivePath)
-		cleanArchiveFile(archivePath)
-		if exportDirectory != "":		
-			ipaPath = getIpaPath(exportDirectory)
+    archiveReturnCode = process.returncode
+    if archiveReturnCode != 0:
+        print("archive workspace {} failed".format(workspace))
+        cleanArchiveFile(archivePath)
+    else:
+        exportDirectory = exportArchive(scheme, archivePath)
+        cleanArchiveFile(archivePath)
+        if exportDirectory != "":
+            ipaPath = getIpaPath(exportDirectory)
             if POSTPGY:
                 uploadIpaToPgyer(ipaPath)
             else:
