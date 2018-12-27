@@ -8,10 +8,12 @@ import argparse
 import subprocess
 import requests
 import os
+import time
 
 SCHEMENAME = "AskDoctor"
 #configuration for iOS build setting
-CONFIGURATION = "Debug"
+#Debug / Release
+CONFIGURATION = "Release"
 # method:打包方式值：app-store, ad-hoc, enterprise, development
 EXPORT_OPTIONS_PLIST = "exportOptions.plist"
 #会在桌面创建输出ipa文件的目录
@@ -86,10 +88,11 @@ def uploadIpaToPgyer(ipaPath):
 
 #创建输出ipa文件路径: ~/Desktop/{scheme}{2016-12-28_08-08-10}
 def buildExportDirectory(scheme):
-    dateCmd = 'date"+%Y-%m-%d_%H-%M-%S"'
-    process = subprocess.Popen(dateCmd, stdout=subprocess.PIPE, shell=True)
-    (stdoutdata, stderrdata) = process.communicate()
-    exportDirectory = "{}{}{}".format(EXPORT_MAIN_DIRECTORY, scheme,stdoutdata.strip())
+#    dateCmd = 'date "+%Y-%m-%d_%H-%M-%S"'
+#    process = subprocess.Popen(dateCmd, stdout=subprocess.PIPE, shell=True)
+#    (stdoutdata, stderrdata) = process.communicate()
+    buildTime = time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(time.time()))
+    exportDirectory = "{}{}{}".format(EXPORT_MAIN_DIRECTORY, scheme,buildTime)
     return exportDirectory
 
 def buildArchivePath(tempName):
@@ -100,11 +103,14 @@ def buildArchivePath(tempName):
     return archivePath
 
 def getIpaPath(exportPath):
-    cmd = "ls {}".format(exportPath)
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-    (stdoutdata, stderrdata) = process.communicate()
-    ipaName = stdoutdata.strip()
-    ipaPath = (str)(exportPath) + "/" + (str)(ipaName)
+    if SCHEMENAME:
+        ipaPath = exportPath + '/' + SCHEMENAME + '.ipa'
+    else:
+        cmd = "ls {}".format(exportPath)
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        (stdoutdata, stderrdata) = process.communicate()
+        ipaName = stdoutdata.strip()
+        ipaPath = (str)(exportPath) + "/" + (str)(ipaName)
     return ipaPath
 
 def exportArchive(scheme, archivePath):
